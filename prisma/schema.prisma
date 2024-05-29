@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  directUrl = env("DIRECT_URL")
+}
+
+model User  {
+  id  Int @id @default(autoincrement())
+  name String 
+  email String  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([id])
+  @@unique([email])
+
+  bookAssignments BookAssignment[]
+}
+
+model Book {
+  id Int  @id @default(autoincrement())
+  isbn13 String
+  name String
+  author String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([id])
+  @@unique([isbn13])
+
+  bookAssignments BookAssignment[] // although this implies one-to-many, we will constrain it to one-to-one
+}
+
+model BookAssignment {
+   id Int  @id @default(autoincrement())
+   user_id Int
+   book_id Int
+   checkoutDate DateTime @default(now())
+   updatedAt DateTime @updatedAt
+
+  @@unique([book_id]) // you can only have one and only one book per assignment
+
+   user User @relation(fields: [user_id], references: [id]) //one to many from user to bookassignments
+   book Book@relation(fields: [book_id], references: [id]) // one to one or zero from book to bookassignments
+   
+}
